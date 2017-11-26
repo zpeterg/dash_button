@@ -33,9 +33,8 @@ var pauseIt = function() {
   }
 }
 
-var dash = dash_button([Secrets.dash1], null, null, 'all'); //address from step above
+var dash = dash_button([Secrets.dash1, Secrets.dash2], null, null, 'all'); //address from step above
 dash.on("detected", function (dash_id){
-  /*
   if (dash_id === Secrets.dash1){
       console.log("Pushed Emaili!");
       curl.request('https://maker.ifttt.com/trigger/dash_push/with/key/' + Secrets.ifttt_key, function(err, data) {
@@ -44,8 +43,7 @@ dash.on("detected", function (dash_id){
          console.log('data:::', data);
      });
   }
-  */
-  if (dash_id === Secrets.dash1){
+  if (dash_id === Secrets.dash2){
     console.log("Pushed Play!");
     if (playing) {
       pauseIt();

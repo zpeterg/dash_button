@@ -2,14 +2,18 @@
 A quick-setup set of actions triggered by a dash button
 
 #Installation
-Install required programs:
+##Install required programs:
 ```sudo apt-get install alsa-base alsa-utils```
 ```sudo apt-get install libpcap-dev```
+May need to set headphone output on Raspberry Pi:
+```amixer cset numid=3 1```
+And adjust volume:
+```alsamixer```
 
-Clone repo:
+##Clone repo:
 ```git clone https://github.com/zpeterg/dash_button```
 
-Create a file called ```secrets.js``` at the root, with contents like:
+##Create a file called ```secrets.js``` at the root, with contents like:
 ```
 module.exports = {
     ifttt_key: 'ifttt_key_for_webhook',

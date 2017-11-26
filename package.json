@@ -4,6 +4,7 @@
   "description": "Push a dash button and get several actions",
   "main": "index.js",
   "dependencies": {
+    "aplay": "^1.2.0",
     "curlrequest": "^1.0.1",
     "node-dash-button": "^0.6.1",
     "sendmail": "^1.2.0"

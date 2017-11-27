@@ -6,6 +6,7 @@
   "dependencies": {
     "aplay": "^1.2.0",
     "curlrequest": "^1.0.1",
+    "express": "^4.16.2",
     "node-dash-button": "^0.6.1",
     "sendmail": "^1.2.0"
   },

@@ -20,3 +20,7 @@ module.exports = {
     dash1: '19:93:19:39-device-id',
 };
 ```
+
+# Tips
+## Updating the key for SSH: 
+```https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/```

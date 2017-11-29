@@ -19,7 +19,10 @@ module.exports = {
     ifttt_key: 'ifttt_key_for_webhook',
     dash1: '19:93:19:39-device-id',
 };
+
 ```
+
+##Create files named ```gapp_commands.json``` and ```gapp_state.json``` outside of project root.
 
 # Tips
 ## Updating the key for SSH: 

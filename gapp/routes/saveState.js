@@ -9,10 +9,10 @@ router.use(function(req, res, next) {
   next();
 });
 
-/* POST */
+/* POST */ 
 router.post('/', function (req, res) {
   // Write commands
-  fs.writeFile('/home/pi/gapp_commands.json', JSON.stringify(req.body, null, '\t'), function(err) {
+  fs.writeFile('/home/pi/gapp_commands.json', JSON.stringify(req.body), function(err) {
     if (err) return console.log('Error saving', err);
     // Read/return state
     fs.readFile('/home/pi/gapp_state.json', function(errRead, fileContents) {

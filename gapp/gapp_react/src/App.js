@@ -40,7 +40,7 @@ class App extends Component {
           Parent.serverWatch();
           return true;
         },
-        3000
+        5000
       );
     }
   }
@@ -78,6 +78,7 @@ class App extends Component {
     this.setState({
       playDuration: evt.target.value,
     });
+    this.serverCall();
   }
 
   changePlay() {
@@ -85,6 +86,7 @@ class App extends Component {
     this.setState({
       playing: !this.state.playing,
     });
+    this.serverCall();
   }
   
   render() {

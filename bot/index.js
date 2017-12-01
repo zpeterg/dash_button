@@ -2,7 +2,11 @@ var dash_button = require('node-dash-button');
 var curl = require('curlrequest');
 var Sound = require('aplay');
 var fs = require('fs');
+var Moment = require('moment');
 var Secrets = require('./secrets.js');
+var Settings = {
+  timeFormat: 'HH:mm',
+};
 
 var playing = false;
 var paused = false;
@@ -26,28 +30,19 @@ var writeStateFile = function(data, callback) {
     });
 };
 
-var think = function() {
-  readFile('commands', function(commands){
-    readFile('state', function(state) {
-      if (commands.playing && !state.playing) {
-        playIt();
-        state.playing = true;
-      }
-      else if (!commands.playing && state.playing) {
-        pauseIt();
-        state.playing = false;
-      }
-      
-      writeStateFile(state, function() {
-        setTimeout(function(){
-          console.log('Finished writing --');
-          think();
-        }, 5000);
-      });
-    });
-  });
+var getTimeStamp = function() {
+  return Moment().format(Settings.timeFormat);
 };
-think();
+
+// Compare two dates, with a duration of minutes added to first
+var timePlusDurationIsAfterTime = function(firstTime, duration, secondTime) {
+  var first = Moment(firstTime, Settings.timeFormat);
+  var second = Moment(secondTime, Settings.timeFormat);
+  first.add(duration, 'm');
+  console.log(first.format('DD HH:mm'), second.format('DD HH:mm'));
+  var rtn = first.isAfter(second);
+  return rtn;
+};
 
 var playIt = function() {
 
@@ -65,16 +60,16 @@ var playIt = function() {
 
 // Toggle-function that pauses/resumes the music per above
 var pauseIt = function() {
-  if (!paused) {
-    music.pause();
-    paused = true;
-    console.log('Paused sound...');
-  } else {
-    music.resume();
-    paused = false;
-    console.log('Resuming sound...');
-  }
-}
+  music.pause();
+  paused = true;
+  console.log('Paused sound...');
+};
+
+var resumeIt = function() {
+  music.resume();
+  paused = false;
+  console.log('Resuming sound...');
+};
 
 var dashListen = function() {
   var dash = dash_button([Secrets.dash1, Secrets.dash2], null, null, 'all'); //address from step above
@@ -99,3 +94,53 @@ var dashListen = function() {
 };
 
 
+// Main think process
+var thinkProcess = function(state, commands) {
+  // Play Duration
+  if (commands.playDuration !== state.playDuration){
+    state.playDuration = commands.playDuration;
+  }
+  // Playing
+  if (commands.playing && !state.playing) {
+    playIt();
+    state.playing = true;
+    state.playStartedTime = getTimeStamp();           // timestamp the start
+  }
+  else if (typeof commands.playing !== 'undefined' && (!commands.playing && state.playing)) {      // if changing playing state to false
+    pauseIt();
+    state.playing = false;
+  }
+  console.log('------');
+  // Consider time
+  if (timePlusDurationIsAfterTime(state.playStartedTime, state.playDuration, getTimeStamp())) {    // Within play-time
+    console.log('Within the time limit - play it!');
+    console.log('state of playing', state.playing);
+    if (!state.playing) {
+      console.log('Not playing already - play it!');
+      playIt();
+      state.playing = true;  
+    }    
+  } else {                                      // Outside the play-time
+    console.log('Outside the time-limit, STOP IT!');
+    pauseIt();
+    state.playing = false;
+  } 
+  
+  return state;
+};
+
+var think = function() {
+  readFile('commands', function(commands){
+    readFile('state', function(state) {
+      state = thinkProcess(state, commands);
+      console.log('state:::', state);
+      writeStateFile(state, function() {
+        setTimeout(function(){
+          console.log('Finished writing --');
+          think();
+        }, 5000);
+      });
+    });
+  });
+};
+think();

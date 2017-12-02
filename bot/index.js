@@ -5,6 +5,8 @@ var fs = require('fs');
 var Moment = require('moment');
 var Secrets = require('./secrets.js');
 var Settings = {
+  defaultStartTime: '0:00',
+  defaultDuration: 0,
   timeFormat: 'HH:mm',
 };
 
@@ -39,9 +41,23 @@ var timePlusDurationIsAfterTime = function(firstTime, duration, secondTime) {
   var first = Moment(firstTime, Settings.timeFormat);
   var second = Moment(secondTime, Settings.timeFormat);
   first.add(duration, 'm');
-  console.log(first.format('DD HH:mm'), second.format('DD HH:mm'));
+  console.log(first.format('DD HH:mm') + ' is ' + firstTime + ' plus ' + duration + ' and is maybe after ' + second.format('DD HH:mm'));
   var rtn = first.isAfter(second);
   return rtn;
+};
+
+//// Switch1
+var switch1On = function() {
+  curl.request('https://maker.ifttt.com/trigger/switch1On/with/key/' + Secrets.ifttt_key, function(err, data) {
+    if (err) console.log('error:::', err);
+    console.log('data:::', data);
+  });
+};
+var switch1Off = function() {
+  curl.request('https://maker.ifttt.com/trigger/switch1Off/with/key/' + Secrets.ifttt_key, function(err, data) {
+    if (err) console.log('error:::', err);
+    console.log('data:::', data);
+  });
 };
 
 var playIt = function() {
@@ -57,7 +73,6 @@ var playIt = function() {
   }
   playing = true;
 };
-
 // Toggle-function that pauses/resumes the music per above
 var pauseIt = function() {
   music.pause();
@@ -96,22 +111,18 @@ var dashListen = function() {
 
 // Main think process
 var thinkProcess = function(state, commands) {
+  ///// Play
   // Play Duration
-  if (commands.playDuration !== state.playDuration){
+  if (typeof state.playDuration === 'undefined') state.playDuration = Settings.defaultDuration;     // default state
+  if (typeof commands.playDuration !== 'undefined' && commands.playDuration !== state.playDuration){
     state.playDuration = commands.playDuration;
   }
-  // Playing
-  if (commands.playing && !state.playing) {
-    playIt();
-    state.playing = true;
-    state.playStartedTime = getTimeStamp();           // timestamp the start
-  }
-  else if (typeof commands.playing !== 'undefined' && (!commands.playing && state.playing)) {      // if changing playing state to false
-    pauseIt();
-    state.playing = false;
-  }
-  console.log('------');
-  // Consider time
+  // Play PlayStartedTime
+  if (typeof state.playStartedTime === 'undefined') state.playStartedTime = Settings.defaultStartTime;  // default state
+  if (typeof commands.playStartedTime !== 'undefined' && commands.playStartedTime !== state.playStartedTime){
+    state.playStartedTime = commands.playStartedTime;
+  }  
+  // Consider time for play
   if (timePlusDurationIsAfterTime(state.playStartedTime, state.playDuration, getTimeStamp())) {    // Within play-time
     console.log('Within the time limit - play it!');
     console.log('state of playing', state.playing);
@@ -126,10 +137,37 @@ var thinkProcess = function(state, commands) {
     state.playing = false;
   } 
   
+  ///// Switch1
+  // Switch1 Duration
+  if (typeof state.switch1Duration === 'undefined') state.switch1Duration = Settings.defaultDuration;     // default state
+  if (typeof commands.switch1Duration !== 'undefined' && commands.switch1Duration !== state.switch1Duration){
+    state.switch1Duration = commands.switch1Duration;
+  }
+  // Switch1StartedTime
+  if (typeof state.switch1StartedTime === 'undefined') state.switch1StartedTime = Settings.defaultStartTime;  // default state
+  if (typeof commands.switch1StartedTime !== 'undefined' && commands.switch1StartedTime !== state.switch1StartedTime){
+    state.switch1StartedTime = commands.switch1StartedTime;
+  }
+  // Consider time for switch1
+  if (timePlusDurationIsAfterTime(state.switch1StartedTime, state.switch1Duration, getTimeStamp())) {    // Within switch1-time
+    console.log('Within the time limit - switch1 it!');
+    console.log('state of switch1On', state.switch1On);
+    if (!state.switch1On) {
+      console.log('Not switch1On already - switch1 turn-on!');
+      switch1On();
+      state.switch1On = true;  
+    }    
+  } else {                                      // Outside the switch1-time
+    console.log('Outside the time-limit, STOP SWITCH1 IT!');
+    switch1Off();
+    state.switch1On = false;
+  } 
+  
   return state;
 };
 
 var think = function() {
+  console.log('started----------------');
   readFile('commands', function(commands){
     readFile('state', function(state) {
       state = thinkProcess(state, commands);

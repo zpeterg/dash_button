@@ -7,8 +7,10 @@ var Secrets = require('./secrets.js');
 var Settings = {
   defaultStartTime: '0:00',
   defaultDuration: 0,
+  loopSeconds: 2 * 1000,
   timeFormat: 'HH:mm',
 };
+var debug = false;
 
 var playing = false;
 var paused = false;
@@ -40,9 +42,9 @@ var getTimeStamp = function() {
 var timePlusDurationIsAfterTime = function(firstTime, duration, secondTime) {
   var first = Moment(firstTime, Settings.timeFormat);
   var second = Moment(secondTime, Settings.timeFormat);
-  first.add(duration, 'm');
-  console.log(first.format('DD HH:mm') + ' is ' + firstTime + ' plus ' + duration + ' and is maybe after ' + second.format('DD HH:mm'));
-  var rtn = first.isAfter(second);
+  var firstPlusDuration = Moment(first).add(duration, 'm');
+  if (debug) console.log(firstPlusDuration.format('DD HH:mm') + ' is ' + firstTime + ' plus ' + duration + ' and is maybe after ' + second.format('DD HH:mm'));
+  var rtn = first.isBefore(second) && firstPlusDuration.isAfter(second);            // second is between first and first+duration
   return rtn;
 };
 
@@ -50,13 +52,13 @@ var timePlusDurationIsAfterTime = function(firstTime, duration, secondTime) {
 var switch1On = function() {
   curl.request('https://maker.ifttt.com/trigger/switch1On/with/key/' + Secrets.ifttt_key, function(err, data) {
     if (err) console.log('error:::', err);
-    console.log('data:::', data);
+    if (debug) console.log('data:::', data);
   });
 };
 var switch1Off = function() {
   curl.request('https://maker.ifttt.com/trigger/switch1Off/with/key/' + Secrets.ifttt_key, function(err, data) {
     if (err) console.log('error:::', err);
-    console.log('data:::', data);
+    if (debug) console.log('data:::', data);
   });
 };
 
@@ -77,28 +79,28 @@ var playIt = function() {
 var pauseIt = function() {
   music.pause();
   paused = true;
-  console.log('Paused sound...');
+  if (debug) console.log('Paused sound...');
 };
 
 var resumeIt = function() {
   music.resume();
   paused = false;
-  console.log('Resuming sound...');
+  if (debug) console.log('Resuming sound...');
 };
 
 var dashListen = function() {
   var dash = dash_button([Secrets.dash1, Secrets.dash2], null, null, 'all'); //address from step above
   dash.on("detected", function (dash_id){
     if (dash_id === Secrets.dash1){
-        console.log("Pushed Emaili!");
+        if (debug) console.log("Pushed Emaili!");
         curl.request('https://maker.ifttt.com/trigger/dash_push/with/key/' + Secrets.ifttt_key, function(err, data) {
            if (err)
               console.log('error:::', err);
-           console.log('data:::', data);
+           if (debug) console.log('data:::', data);
        });
     }
     if (dash_id === Secrets.dash2){
-      console.log("Pushed Play!");
+      if (debug) console.log("Pushed Play!");
       if (playing) {
         pauseIt();
       } else {
@@ -124,15 +126,15 @@ var thinkProcess = function(state, commands) {
   }  
   // Consider time for play
   if (timePlusDurationIsAfterTime(state.playStartedTime, state.playDuration, getTimeStamp())) {    // Within play-time
-    console.log('Within the time limit - play it!');
-    console.log('state of playing', state.playing);
+    if (debug) console.log('Within the time limit - play it!');
+    if (debug) console.log('state of playing', state.playing);
     if (!state.playing) {
-      console.log('Not playing already - play it!');
+      if (debug) console.log('Not playing already - play it!');
       playIt();
       state.playing = true;  
     }    
   } else {                                      // Outside the play-time
-    console.log('Outside the time-limit, STOP IT!');
+    if (debug) console.log('Outside the time-limit, STOP IT!');
     pauseIt();
     state.playing = false;
   } 
@@ -150,33 +152,33 @@ var thinkProcess = function(state, commands) {
   }
   // Consider time for switch1
   if (timePlusDurationIsAfterTime(state.switch1StartedTime, state.switch1Duration, getTimeStamp())) {    // Within switch1-time
-    console.log('Within the time limit - switch1 it!');
-    console.log('state of switch1On', state.switch1On);
+    if (debug) console.log('Within the time limit - switch1 it!');
+    if (debug) console.log('state of switch1On', state.switch1On);
     if (!state.switch1On) {
-      console.log('Not switch1On already - switch1 turn-on!');
+      if (debug) console.log('Not switch1On already - switch1 turn-on!');
       switch1On();
       state.switch1On = true;  
     }    
   } else {                                      // Outside the switch1-time
-    console.log('Outside the time-limit, STOP SWITCH1 IT!');
-    switch1Off();
-    state.switch1On = false;
+    if (debug) console.log('Outside the time-limit, STOP SWITCH1 IT!');
+    if (state.switch1On) {
+      switch1Off();
+      state.switch1On = false;
+    }
   } 
   
   return state;
 };
 
 var think = function() {
-  console.log('started----------------');
   readFile('commands', function(commands){
     readFile('state', function(state) {
       state = thinkProcess(state, commands);
-      console.log('state:::', state);
+      if (debug) console.log('state:::', state);
       writeStateFile(state, function() {
         setTimeout(function(){
-          console.log('Finished writing --');
           think();
-        }, 5000);
+        }, Settings.loopSeconds);
       });
     });
   });

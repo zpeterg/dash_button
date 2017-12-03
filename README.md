@@ -25,5 +25,10 @@ module.exports = {
 ##Create files named ```gapp_commands.json``` and ```gapp_state.json``` outside of project root.
 
 # Tips
+## Outline
+There are three different main sections:
+- ```gapp```: Server (```sudo npm start``` to initiate server),
+- ```bot```: Looping script that contains most of the brains, translating ```commands``` to ```state``` and triggering events as this is done (```npm start``` to run script).
+- ```gapp/gapp_react```: Client-side React app (```npm start``` to run the development server, ```npm run build``` to compile for server to run).
 ## Updating the key for SSH: 
 ```https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/```

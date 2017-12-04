@@ -32,3 +32,18 @@ There are three different main sections:
 - ```gapp/gapp_react```: Client-side React app (```npm start``` to run the development server, ```npm run build``` to compile for server to run).
 ## Updating the key for SSH: 
 ```https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/```
+## Flushing logs
+```sudo pm2 flush```
+## Setting Static IP in Rasp Pi, from https://askubuntu.com/questions/530522/setting-a-static-ip-on-ubuntu:
+```
+auto wlan0
+iface wlan0 inet static
+    address 192.168.1.87
+    netmask 255.255.255.0
+    network 192.168.1.0
+    broadcast 192.168.1.255
+    gateway 192.168.1.1
+    dns-nameservers 192.168.1.1, 8.8.8.8
+    wpa-ssid <Your wifi network SSID>
+    wpa-psk <Your wifi password>
+```

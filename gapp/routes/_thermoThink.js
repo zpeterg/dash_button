@@ -1,14 +1,16 @@
 var Gpio = require('onoff').Gpio;
+var Settings = {
+  timePressPadding: 100,
+  timePress: 200,
+  prePushPause: 5 * 1000,
+  gpioUp: 4,
+  gpioDown: 17,
+};
 var relayUp = new Gpio(4, 'out');
 relayUp.writeSync(1);                                                 // Turn-off by default
 var relayDown = new Gpio(17, 'out');
 relayDown.writeSync(1);                                               // Turn-off by default
 var Promise = require("bluebird");
-var Settings = {
-  timePressPadding: 100,
-  timePress: 200,
-  prePushPause: 5 * 1000,
-};
 var prePush = true;                                                    // If true, push once before
                                                                         // To switch display on thermostat
 var prePushTimeout;

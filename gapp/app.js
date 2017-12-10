@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var saveState = require('./routes/saveState');
+var changeThermo = require('./routes/changeThermo');
 
 var app = express();
 
@@ -26,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'gapp_react/build')));
 app.use('/', index);
 app.use('/users', users);
 app.use('/saveState', saveState);
+app.use('/changeThermo', changeThermo);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

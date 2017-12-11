@@ -15,15 +15,79 @@ let pauseServerLoad = false;                  // Used to temporarily pause loadi
 const blockServerWatch = false;
 let updatedState = [];
 
+
 class App extends Component {
   constructor(props) {
     super(props);
+    const Parent = this;
+    const actionPrototype = {
+      actionName: 'play',                         // Default name
+      changeDuration: function(newValue) {
+        Parent.setState({
+          [this.actionName + 'Duration']: newValue,
+        });
+        updatedState.push(this.actionName + 'Duration');               // Flag as changed to save
+      },
+      changeStartedTime: function(newValue) {
+        Parent.setState({
+          [this.actionName + 'StartedTime']: newValue,
+        });
+        updatedState.push(this.actionName + 'StartedTime');        // Flag as changed to save
+      },
+      changeStartedTimeToNow: function() {
+        var timeNow = Moment().subtract(5, 'minutes').format(Settings.timeFormat);
+        return this.changeStartedTime(timeNow);
+      },
+    };
+    const actionSpanPrototype = {
+      actionName: 'thermo',                         // Default name
+      changeTemp: function(newValue, which) {
+        Parent.setState({
+          [this.actionName + which + 'Temp']: newValue,
+        });
+        updatedState.push(this.actionName + which + 'Temp');               // Flag as changed to save
+      },
+      changeStartedTime: function(newValue, which) {            // which is started time 1 or 2
+        Parent.setState({
+          [this.actionName + which + 'StartedTime']: newValue,
+        });
+        updatedState.push(this.actionName + which + 'StartedTime');        // Flag as changed to save
+      },
+      changeEndedTime: function(newValue, which) {            // which is started time 1 or 2
+        Parent.setState({
+          [this.actionName + which + 'EndedTime']: newValue,
+        });
+        updatedState.push(this.actionName + which + 'EndedTime');        // Flag as changed to save
+      },
+      changeStartedTimeToNow: function() {               // which is started time 1 or 2
+        Parent.setState({
+          [this.actionName + 'Outing']: !Parent.state[this.actionName + 'Outing'],
+        });
+        updatedState.push(this.actionName + 'Outing');
+      },
+      changeStartedTimeToNowDate: function(which) {                    // which is "Boost", etc.
+        var timeNow = Moment().subtract(5, 'minutes').format();         // standard full date output
+        return this.changeStartedTime(timeNow, which);
+      },
+    };
+    
     this.state = { 
       playDuration: 0,
       playStartedTime: '0:00',
       switch1Duration: 0,
       switch1StartedTime: '0:00',
+      thermo0Temp: 71,
+      thermo1Temp: 68,
+      thermo1StartedTime: '0:00',
+      thermo1EndedTime: '0:00',
+      thermoOutingTemp: 66,
+      thermoBoostTemp: 3,
+      thermoBoostStartedTime: '0:00',
     };
+    this.playAction = Object.create(actionPrototype);
+    this.switch1Action = Object.create(actionPrototype);
+    this.switch1Action.actionName = 'switch1';
+    this.thermoAction = Object.create(actionSpanPrototype);
   }
   
   componentDidMount() {
@@ -80,41 +144,6 @@ class App extends Component {
     this.setState(newState);
   }
   
-  ////// Music
-  changeDuration(newValue) {
-    this.setState({
-      playDuration: newValue,
-    });
-    updatedState.push('playDuration');               // Flag as changed to save
-  }
-  changePlayStartedTime(newValue) {
-    this.setState({
-      playStartedTime: newValue,
-    });
-    updatedState.push('playStartedTime');        // Flag as changed to save
-  }
-  changePlayStartedTimeToNow() {
-    var timeNow = Moment().subtract(5, 'minutes').format(Settings.timeFormat);
-    return this.changePlayStartedTime(timeNow);
-  }
-  
-  ////// Switch1
-  changeSwitch1Duration(newValue) {
-    this.setState({
-      switch1Duration: newValue,
-    });
-    updatedState.push('switch1Duration');               // Flag as changed to save
-  }
-  changeSwitch1StartedTime(newValue) {
-    this.setState({
-      switch1StartedTime: newValue,
-    });
-    updatedState.push('switch1StartedTime');        // Flag as changed to save
-  }
-  changeSwitch1StartedTimeToNow() {
-    var timeNow = Moment().subtract(5, 'minutes').format(Settings.timeFormat);
-    return this.changeSwitch1StartedTime(timeNow);
-  }
   
   render() {
     return (
@@ -122,11 +151,79 @@ class App extends Component {
         <div className="App" style={{ marginLeft: "-125px", width: "250px" }}>
           <header className="App-header">
             <img src={logo} className="App-logo" alt="logo" />
-            <h1 className="App-title">Grander App</h1>
+            <h1 className="App-title">{Settings.siteName}</h1>
           </header>
           <p className="App-intro" style={{ fontSize: '12px' }}>
             All changes automatically save in a few seconds.
           </p>
+          
+          {/* Thermo */}
+          <br />
+          <h2>Thermostat is at {this.state.thermoTemp}</h2>
+          <Section>
+            <p>
+              Base temp:
+              <Input
+                type='number'
+                value={this.state.thermo0Temp}
+                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeTemp(evt.target.value, 'base')}}
+              />
+            </p>
+            <p>
+              Span Start Time
+              <Input 
+                value={this.state.thermo1StartedTime}
+                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeStartedTime(evt.target.value, 1)}}
+              />
+            </p>
+            <p>
+              Span End Time
+              <Input 
+                value={this.state.thermo1EndedTime}
+                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeEndedTime(evt.target.value, 1)}}
+              />
+            </p>
+            <p>
+              Span Temp:
+              <Input
+                type='number'
+                value={this.state.thermo1Temp}
+                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeTemp(evt.target.value, 1)}}
+              />
+            </p>
+            <p>
+              Outing Temp:
+              <Input
+                type='number'
+                value={this.state.thermoOutingTemp}
+                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeTemp(evt.target.value, 'Outing')}}
+              />
+            </p>
+          </Section>
+          <p>
+            <Button onClick={(evt) => this.thermoAction.changeOnOuting(evt)} >
+              {this.state.thermoOnOuting ? 'Coming In' : 'Going Out'}
+            </Button>
+          </p>
+          <Section>
+            <p>
+              Boost By Degrees:
+              <Input
+                type='number'
+                value={this.state.thermoBoostTemp}
+                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeTemp(evt.target.value, 'Boost')}}
+              />
+            </p>
+          </Section>
+          <p>
+            <Button onClick={(evt) => this.thermoAction.changeStartedTimeToNowDate('Boost')} >
+              Boost
+            </Button>
+          </p>
+          
+          
+          {/* Music */}
+          <br />
           <h2>Music is {this.state.playing ? 'Playing' : 'Not playing'}</h2>
           <Section>
             <p>
@@ -134,21 +231,23 @@ class App extends Component {
               <Input
                 type='number'
                 value={this.state.playDuration}
-                onChange={(evt) => {evt.preventDefault(); return this.changeDuration(evt.target.value)}}
+                onChange={(evt) => {evt.preventDefault(); return this.playAction.changeDuration(evt.target.value)}}
               />
             </p>
             <p>
               Start time: 
               <Input 
                 value={this.state.playStartedTime}
-                onChange={(evt) => {evt.preventDefault(); return this.changePlayStartedTime(evt.target.value)}}
+                onChange={(evt) => {evt.preventDefault(); return this.playAction.changeStartedTime(evt.target.value)}}
               />
             </p>
           </Section>
           <p>
-            <Button onClick={(evt) => this.changePlayStartedTimeToNow(evt)} >Play Now</Button>
+            <Button onClick={(evt) => this.playAction.changeStartedTimeToNow(evt)} >Play Now</Button>
           </p>
           
+          {/* Switch1 */}
+          <br />
           <h2>Christmas Lights are {this.state.switch1On ? 'On' : 'Off'}</h2>
           <Section>
             <p>
@@ -156,19 +255,19 @@ class App extends Component {
               <Input
                 type='number'
                 value={this.state.switch1Duration}
-                onChange={(evt) => {evt.preventDefault(); return this.changeSwitch1Duration(evt.target.value)}}
+                onChange={(evt) => {evt.preventDefault(); return this.switch1Action.changeDuration(evt.target.value)}}
               />
             </p>
             <p>
               Turn-on time:
               <Input 
                 value={this.state.switch1StartedTime} 
-                onChange={(evt) => {evt.preventDefault(); return this.changeSwitch1StartedTime(evt.target.value)}}
+                onChange={(evt) => {evt.preventDefault(); return this.switch1Action.changeStartedTime(evt.target.value)}}
               />
             </p>
           </Section>
           <p>
-            <Button onClick={(evt) => this.changeSwitch1StartedTimeToNow(evt)} >Turn On Now</Button>
+            <Button onClick={(evt) => this.switch1Action.changeStartedTimeToNow(evt)} >Turn On Now</Button>
           </p>
           
           <p>

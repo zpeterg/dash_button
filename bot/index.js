@@ -1,6 +1,7 @@
 var curl = require('curlrequest');
 var Sound = require('aplay');
-var fs = require('fs');
+var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'));
 var Moment = require('moment');
 var Secrets = require('./secrets.js');
 var Settings = require('./Settings.js');
@@ -11,12 +12,10 @@ var playing = false;
 var paused = false;
 var music = new Sound();
 
-var writeStateFile = function(data, callback) {
-  fs.writeFile(Utils.chooseFile('state'), JSON.stringify(data), function(errRead, fileContents) {
-      if (errRead) return console.log('Error reading', errRead);
-      callback();
-    });
+var writeStateFile = function(data) {
+  return fs.writeFileAsync(Utils.chooseFile('state'), JSON.stringify(data));
 };
+
 
 // Compare two dates, with a duration of minutes added to first
 var timePlusDurationIsAfterTime = function(firstTime, duration, secondTime) {
@@ -30,15 +29,21 @@ var timePlusDurationIsAfterTime = function(firstTime, duration, secondTime) {
 
 //// Switch1
 var switch1On = function() {
-  curl.request('https://maker.ifttt.com/trigger/switch1On/with/key/' + Secrets.ifttt_key, function(err, data) {
-    if (err) console.log('error:::', err);
-    if (Settings.debug) console.log('data:::', data);
+  return new Promise(function(resolve, reject) {
+    curl.request('https://maker.ifttt.com/trigger/switch1On/with/key/' + Secrets.ifttt_key, function(err, data) {
+      if (err) reject('Error with switch1On curl', err);
+      if (Settings.debug) console.log('data:::', data);
+      resolve();
+    });
   });
 };
 var switch1Off = function() {
-  curl.request('https://maker.ifttt.com/trigger/switch1Off/with/key/' + Secrets.ifttt_key, function(err, data) {
-    if (err) console.log('error:::', err);
-    if (Settings.debug) console.log('data:::', data);
+  return new Promise(function(resolve, reject) {
+    curl.request('https://maker.ifttt.com/trigger/switch1Off/with/key/' + Secrets.ifttt_key, function(err, data) {
+      if (err) reject('Error with switch1Off curl', err);
+      if (Settings.debug) console.log('data:::', data);
+      resolve();
+    });
   });
 };
 
@@ -73,6 +78,7 @@ var resumeIt = function() {
 
 // Main think process
 var thinkProcess = function(state, commands) {
+  var thinkExecution = [];                    // list of promises to run at the end
   ///// Play
   // Play Duration
   if (typeof state.playDuration === 'undefined') state.playDuration = Settings.defaultDuration;     // default state
@@ -116,31 +122,51 @@ var thinkProcess = function(state, commands) {
     if (Settings.debug) console.log('state of switch1On', state.switch1On);
     if (!state.switch1On) {
       if (Settings.debug) console.log('Not switch1On already - switch1 turn-on!');
-      switch1On();
-      state.switch1On = true;  
+      thinkExecution.push(switch1On().then(state.switch1On = true));
     }    
   } else {                                      // Outside the switch1-time
     if (Settings.debug) console.log('Outside the time-limit, STOP SWITCH1 IT!');
     if (state.switch1On) {
-      switch1Off();
-      state.switch1On = false;
+      thinkExecution.push(switch1Off().then(state.switch1On = false));
     }
   } 
   
-  return state;
+  return new Promise(function(resolve, reject) {
+    Promise.all(thinkExecution)
+      .then(function() {
+        resolve(state);                     // return the global state after all modifications
+      })
+      .catch(function(err) {
+        reject('Error in ThinkProcess:', err);
+      });
+  });
 };
 
 var think = function() {
-  Utils.readFile('commands', function(commands){
-    Utils.readFile('state', function(state) {
-      state = thinkProcess(state, commands);
-      if (Settings.debug) console.log('state:::', state);
-      writeStateFile(state, function() {
-        setTimeout(function(){
-          think();
-        }, Settings.loopSeconds);
+  return new Promise(function(resolve, reject) {
+    Promise.all([
+      Utils.readFile('commands'), 
+      Utils.readFile('state')
+    ])
+      .then(function(results) {
+        
+        return thinkProcess(results[1], results[0])         // get thinkProcess
+          .then(function(state) {
+            if (Settings.debug) console.log('state:::', state);
+            return writeStateFile(state)
+              .then(function() {
+                setTimeout(function(){
+                  think()
+                    .then(function() {
+                      resolve();
+                    })
+                    .catch(function(err) {
+                      reject('Error in Think', err);
+                    });
+                }, Settings.loopSeconds);
+              });
+          });
       });
-    });
   });
 };
 DashListen();                 // start listeners

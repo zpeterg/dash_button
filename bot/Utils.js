@@ -1,5 +1,6 @@
 var Moment = require('moment');
-var fs = require('fs');
+var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'));
 var Settings = require('./Settings.js');
 
 var chooseFile = function(which) {
@@ -15,17 +16,22 @@ var getTimeStampBackUpALittle = function() {
 };
 
 var readFile = function(which, callback) {
-  fs.readFile(chooseFile(which), function(errRead, fileContents) {
-    if (errRead) return console.log('Error reading', errRead);
-    var rtn = {};
-    if(fileContents) {
-      try {
-          rtn = JSON.parse(fileContents);       // Use the JSON, if working
-      } catch(e) {
-          console.log('>>>>>>>There was an error reading ' + which + '.<<<<<<<<<');
-      }
-    }
-    callback(rtn);
+  return new Promise(function(resolve, reject) {
+    fs.readFileAsync(chooseFile(which))
+      .then(function(fileContents) {
+        var rtn = {};
+        if(fileContents) {
+          try {
+              rtn = JSON.parse(fileContents);       // Use the JSON, if working
+          } catch(e) {
+              console.log('>>>>>>>There was an error reading ' + which + '.<<<<<<<<<');
+          }
+        }
+        resolve(rtn);
+      })
+      .catch(function(err) {
+        reject('Error reading:', err);
+      });
   });
 };
 

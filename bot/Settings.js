@@ -1,5 +1,5 @@
 module.exports = {
-  debug: false,
+  debug: true,
   defaultStartTime: '0:00',
   defaultDuration: 0,
   loopSeconds: 2 * 1000,

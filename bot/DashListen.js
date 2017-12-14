@@ -1,5 +1,6 @@
 var dash_button = require('node-dash-button');
-var fs = require('fs');
+var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'));
 var Moment = require('moment');
 var Secrets = require('./secrets.js');
 var Settings = require('./Settings.js');
@@ -7,10 +8,7 @@ var Utils = require('./Utils.js');
 
 var writeCommandsFile = function(data, callback) {
   if (Settings.debug) console.log('---- Commands about to written by DashListen --', JSON.stringify(data));
-  fs.writeFile(Utils.chooseFile('commands'), JSON.stringify(data), function(errWrite, fileContents) {
-    if (errWrite) return console.log('Error writing', errWrite);
-    callback();
-  });
+  fs.writeFileAsync(Utils.chooseFile('commands'), JSON.stringify(data));
 };
 
 var decideCommands = function(whichDash, state) {
@@ -40,15 +38,25 @@ var decideCommands = function(whichDash, state) {
     }
   }
   return commands;
-}
+};
 
 var thinkDash = function(whichDash) {
-  Utils.readFile('state', function(state) {
-    if (Settings.debug) console.log('state:::', state);
-    var commands = decideCommands(whichDash, state);
-    writeCommandsFile(commands, function() {
-      console.log('Done with writing commands for dash-push ' + whichDash + '.');
-    });
+  return new Promise(function(reject, resolve) {
+    Utils.readFile('state')
+      .then(function(state) {
+        if (Settings.debug) console.log('state:::', state);
+        var commands = decideCommands(whichDash, state);
+        return writeCommandsFile(commands)
+          .then(function() {
+            resolve('Done with writing commands for dash-push ' + whichDash + '.');
+          })
+          .catch(function(err) {
+            reject('Error writing commands', err);
+          });
+      })
+      .catch(function(err) {
+        reject('Error Reading State in thinkDash:', err);
+      });
   });
 };
 

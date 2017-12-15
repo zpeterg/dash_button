@@ -15,7 +15,7 @@ var getTimeStampBackUpALittle = function() {
   return Moment().subtract(Settings.timeStampBackUpMinutes, 'm').format(Settings.timeFormat);
 };
 
-var readFile = function(which, callback) {
+var readFile = function(which) {
   return new Promise(function(resolve, reject) {
     fs.readFileAsync(chooseFile(which))
       .then(function(fileContents) {
@@ -24,7 +24,7 @@ var readFile = function(which, callback) {
           try {
               rtn = JSON.parse(fileContents);       // Use the JSON, if working
           } catch(e) {
-              console.log('>>>>>>>There was an error reading ' + which + '.<<<<<<<<<');
+              reject('>>>>>>>There was an error reading ' + which + '.<<<<<<<<<');
           }
         }
         resolve(rtn);

@@ -1,7 +1,8 @@
 module.exports = {
-  debug: true,
+  debug: false,
   defaultStartTime: '0:00',
   defaultDuration: 0,
+  defaultTemp: 66,
   loopSeconds: 2 * 1000,
   timeFormat: 'HH:mm',
   defaultPlayDuration: '20',

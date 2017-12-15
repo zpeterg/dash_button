@@ -25,8 +25,7 @@ var decideCommands = function(whichDash, state) {
     if (state.playDuration < Settings.defaultPlayDuration) {          // Default to minimum of default-duration
       commands.playDuration = Settings.defaultPlayDuration;
     }
-  }
-  else if (whichDash === 'switch1') {
+  } else if (whichDash === 'switch1') {
     if (Settings.debug) console.log('Switching Switch1');
     if (state.switch1On) {                                          // if playing already, pause it
       commands.switch1StartedTime = Settings.defaultSwitch1StartTime;
@@ -36,7 +35,11 @@ var decideCommands = function(whichDash, state) {
     if (state.switch1Duration < Settings.defaultSwitch1Duration) {          // Default to minimum of default-duration
       commands.switch1Duration = Settings.defaultSwitch1Duration;
     }
-  }
+  } else if (whichDash === 'thermoGoingOut') {                    // If going out, flag
+    commands.thermoOutingOn = true;
+  } else if (whichDash === 'thermoComingIn') {                    // If coming in, remove flag
+    commands.thermoOutingOn = false;
+  } 
   return commands;
 };
 
@@ -61,12 +64,16 @@ var thinkDash = function(whichDash) {
 };
 
 module.exports = function() {
-  var dash = dash_button([Secrets.dash1, Secrets.dash2], null, null, 'all'); //address from step above
+  var dash = dash_button([Secrets.dash1, Secrets.dash2, Secrets.dashc, Secrets.dashd], null, null, 'all'); //address from step above
   dash.on("detected", function (dash_id){
     if (dash_id === Secrets.dash1) {
       thinkDash('play')
     } else if (dash_id === Secrets.dash2) {
       thinkDash('switch1');
-    }  
+    } else if (dash_id === Secrets.dashc) {
+      thinkDash('thermoGoingOut');
+    } else if (dash_id === Secrets.dashd) {
+      thinkDash('thermoComingIn');
+    }
   });
 };

@@ -59,6 +59,12 @@ class App extends Component {
         });
         updatedState.push(this.actionName + which + 'EndedTime');        // Flag as changed to save
       },
+      changeOnOuting: function() {
+        Parent.setState({
+          [this.actionName + 'OutingOn']: !Parent.state[this.actionName + 'OutingOn']
+        });
+        updatedState.push(this.actionName + 'OutingOn');
+      },
       changeStartedTimeToNow: function() {               // which is started time 1 or 2
         Parent.setState({
           [this.actionName + 'Outing']: !Parent.state[this.actionName + 'Outing'],
@@ -83,6 +89,7 @@ class App extends Component {
       thermoOutingTemp: 66,
       thermoBoostTemp: 3,
       thermoBoostStartedTime: '0:00',
+      thermoOutingOn: false,
     };
     this.playAction = Object.create(actionPrototype);
     this.switch1Action = Object.create(actionPrototype);
@@ -166,7 +173,7 @@ class App extends Component {
               <Input
                 type='number'
                 value={this.state.thermo0Temp}
-                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeTemp(evt.target.value, 'base')}}
+                onChange={(evt) => {evt.preventDefault(); return this.thermoAction.changeTemp(evt.target.value, 0)}}
               />
             </p>
             <p>
@@ -201,8 +208,8 @@ class App extends Component {
             </p>
           </Section>
           <p>
-            <Button onClick={(evt) => this.thermoAction.changeOnOuting(evt)} >
-              {this.state.thermoOnOuting ? 'Coming In' : 'Going Out'}
+            <Button onClick={(evt) => {evt.preventDefault(); this.thermoAction.changeOnOuting()}} >
+              {this.state.thermoOutingOn ? 'Coming In' : 'Going Out'}
             </Button>
           </p>
           <Section>

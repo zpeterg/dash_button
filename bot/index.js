@@ -121,6 +121,7 @@ var ifPresentAndDifferent = function(propName, state, commands) {
 
 var processTemp = function(tempName, state, commands) {
   if (typeof state[tempName] === 'undefined') state[tempName] = Settings.defaultTemp;
+  if (commands[tempName] < Settings.tempMin || commands[tempName] > Settings.tempMax) return state;                 // refuse to process if temp out of range
   return ifPresentAndDifferent(tempName, state, commands);
 };
 var processTime = function(timeName, state, commands) {

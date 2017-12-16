@@ -1,11 +1,5 @@
 var Gpio = require('onoff').Gpio;
-var Settings = {
-  timePressPadding: 100,
-  timePress: 200,
-  prePushPause: 5 * 1000,
-  gpioUp: 4,
-  gpioDown: 17,
-};
+var Settings = require('./Settings.js');
 var relayUp = new Gpio(4, 'out');
 relayUp.writeSync(1);                                                 // Turn-off by default
 var relayDown = new Gpio(17, 'out');

@@ -9,5 +9,7 @@ module.exports = {
   defaultPlayStartTime: '20:20',
   defaultSwitch1Duration: '120',
   defaultSwitch1StartTime: '16:30',
+  tempMin: 60,                            // refuse to set lower
+  tempMax: 80,                            // refuse to set higher
   timeStampBackUpMinutes: 5,
 }

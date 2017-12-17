@@ -30,8 +30,11 @@ var timePlusDurationIsAfterTime = function(firstTime, duration, secondTime) {
 var nowIsBetweenTimes = function(firstTime, secondTime) {
   var first = Moment(firstTime, Settings.timeFormat);
   var second = Moment(secondTime, Settings.timeFormat);
-  if (second.isBefore(first)) second.add(1, 'day');             // If second is before first, presume it refers to tomorrow
-  var now = Moment();
+    var now = Moment();
+  if (second.isBefore(first)) {         // If second is before first, presume one is supposed to be on a different day
+    if (first.isAfter(now) && second.isAfter(now)) first.subtract(1, 'day');    // If both after now, more first to yesterday
+    else if (first.isBefore(now) && second.isBefore(now)) second.add(1, 'day');             
+  }
   if (Settings.debug) console.log('now is checking for between ' + first.format('DD HH:mm') + ' and ' + second.format('DD HH:mm'));
   var rtn = now.isBetween(first, second);
   return rtn;

@@ -1,6 +1,6 @@
 module.exports = {
-  timePressPadding: 50,
-  timePress: 50,
+  timePressPadding: 100,
+  timePress: 100,
   prePushPause: 5 * 1000,
   gpioUp: 4,
   gpioDown: 17,

@@ -1,6 +1,7 @@
 module.exports = {
-  adjustTempDelay: 1,                      // Minutes
-  debug: false,
+  adjustTempDelay: 10,                      // Minutes
+  adjustTempDelayNormal: 5,                      // Minutes
+  debug: true,
   defaultStartTime: '0:00',
   defaultDuration: 0,
   defaultTemp: 66,

@@ -3,6 +3,7 @@ var Sound = require('aplay');
 var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
 var Moment = require('moment');
+var Si7021 = require('si7021-sensor');
 var Secrets = require('./secrets.js');
 var Settings = require('./Settings.js');
 var DashListen = require('./DashListen.js');
@@ -18,24 +19,33 @@ var constThermoAdjust = {
   timeoutAdjust: null,
 };
 
+// Setup sensor 
+var si7021 = new Si7021({ i2cBusNo: 1 });
+
 ///// Thermo adjust temp
+var wipeTimeout = function() {
+  clearTimeout(constThermoAdjust.timeoutAdjust);
+  constThermoAdjust.timeoutAdjust = null;
+};
 var thermoAdjustTemp = function(currTemp) {
   if (constThermoAdjust.blockAdjust) return currTemp;
   constThermoAdjust.blockAdjust = true;
-  clearTimeout(constThermoAdjust.timeoutAdjust);
-  constThermoAdjust.timeoutAdjust = null;
+  wipeTimeout();
   var rtn = constThermoAdjust.adjustToTemp;
   constThermoAdjust.adjustToTemp = 0;
   return rtn;
 };
-var thermoAdjustTempSet = function(minutes) {
+var thermoAdjustTempSet = function(minutes, force) {
+  if (!force && constThermoAdjust.timeoutAdjust !== null) return true;          // Defer to currently running, unless forcing
+  if (force && constThermoAdjust.timeoutAdjust !== null) wipeTimeout();         // If something running & forcing, cancel what's running
   constThermoAdjust.timeoutAdjust = setTimeout(function() {
     si7021.readSensorData()
       .then((data) => {
         console.log(`data = ${JSON.stringify(data, null, 2)}`);
+        console.log(`temp = ${Utils.convertCelsius(data.temperature_C)}`);
         
-        constThermoAdjust.blockAdjust = false;                         // allow adjustment to happen
-        constThermoAdjust.adjustToTemp = data.temperature_C;      // record new temp
+        constThermoAdjust.blockAdjust = false;                    // allow adjustment to happen
+        constThermoAdjust.adjustToTemp = Math.round(Utils.convertCelsius(data.temperature_C));      // record new temp
       })
       .catch((err) => {
         console.log(`Si7021 read error: ${err}`);
@@ -169,7 +179,10 @@ var thinkProcess = function(state, commands) {
   var thinkExecution = [];                    // list of promises to run at the end
 
   ///// Thermo adjust temp
-  state.thermoTemp = thermoAdjustTemp(state.thermoTemp);          // check for updates
+  var rawTemp = thermoAdjustTemp(state.thermoTemp);
+  if (Settings.debug) console.log('temp to adjust to ' + rawTemp + ' and current is ' + state.thermoTemp + '.');
+  state.thermoTemp = rawTemp;          // check for updates
+  thermoAdjustTempSet(Settings.adjustTempDelayNormal);            // 
   
   ///// Thermo
   state = processTemp('thermo0Temp', state, commands);
@@ -207,7 +220,7 @@ var thinkProcess = function(state, commands) {
       state.thermoTemp, state.thermo0Temp)
         .then(function() {
           state.thermoTemp = state.thermo0Temp;
-          thermoAdjustTempSet(Settings.adjustTempDelay);                          // set timeout to adjust temp later
+          thermoAdjustTempSet(Settings.adjustTempDelay, true);                          // set timeout to adjust temp later
           console.log('Set baseline temp as ' + state.thermo0Temp + '.');
         })
     );

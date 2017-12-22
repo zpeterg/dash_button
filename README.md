@@ -47,3 +47,8 @@ iface wlan0 inet static
     wpa-ssid <Your wifi network SSID>
     wpa-psk <Your wifi password>
 ```
+## Setting up Si7021 temperature sensor
+https://github.com/skylarstein/si7021-sensor
+http://console.aws.amazon.com/console/home?region=us-east-1
+http://www.pibits.net/code/raspberry-pi-si7021-sensor-example.php
+And don't forget to turn on the i2c: ```raspi-config```

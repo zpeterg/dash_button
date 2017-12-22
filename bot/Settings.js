@@ -1,4 +1,5 @@
 module.exports = {
+  adjustTempDelay: 1,                      // Minutes
   debug: false,
   defaultStartTime: '0:00',
   defaultDuration: 0,

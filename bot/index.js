@@ -12,6 +12,37 @@ var playing = false;
 var paused = false;
 var music = new Sound();
 var changingThermo = false;
+var constThermoAdjust = {
+  adjustToTemp: 0,
+  blockAdjust: true,
+  timeoutAdjust: null,
+};
+
+///// Thermo adjust temp
+var thermoAdjustTemp = function(currTemp) {
+  if (constThermoAdjust.blockAdjust) return currTemp;
+  constThermoAdjust.blockAdjust = true;
+  clearTimeout(constThermoAdjust.timeoutAdjust);
+  constThermoAdjust.timeoutAdjust = null;
+  var rtn = constThermoAdjust.adjustToTemp;
+  constThermoAdjust.adjustToTemp = 0;
+  return rtn;
+};
+var thermoAdjustTempSet = function(minutes) {
+  constThermoAdjust.timeoutAdjust = setTimeout(function() {
+    si7021.readSensorData()
+      .then((data) => {
+        console.log(`data = ${JSON.stringify(data, null, 2)}`);
+        
+        constThermoAdjust.blockAdjust = false;                         // allow adjustment to happen
+        constThermoAdjust.adjustToTemp = data.temperature_C;      // record new temp
+      })
+      .catch((err) => {
+        console.log(`Si7021 read error: ${err}`);
+      });
+  }, minutes * 60 * 1000);
+};
+
 
 var writeStateFile = function(data) {
   return fs.writeFileAsync(Utils.chooseFile('state'), JSON.stringify(data));
@@ -136,6 +167,9 @@ var processTime = function(timeName, state, commands) {
 // Main think process
 var thinkProcess = function(state, commands) {
   var thinkExecution = [];                    // list of promises to run at the end
+
+  ///// Thermo adjust temp
+  state.thermoTemp = thermoAdjustTemp(state.thermoTemp);          // check for updates
   
   ///// Thermo
   state = processTemp('thermo0Temp', state, commands);
@@ -173,6 +207,7 @@ var thinkProcess = function(state, commands) {
       state.thermoTemp, state.thermo0Temp)
         .then(function() {
           state.thermoTemp = state.thermo0Temp;
+          thermoAdjustTempSet(Settings.adjustTempDelay);                          // set timeout to adjust temp later
           console.log('Set baseline temp as ' + state.thermo0Temp + '.');
         })
     );

@@ -10,7 +10,8 @@
     "express": "^4.16.2",
     "moment": "^2.19.3",
     "node-dash-button": "^0.6.1",
-    "sendmail": "^1.2.0"
+    "sendmail": "^1.2.0",
+    "si7021-sensor": "0.0.7"
   },
   "devDependencies": {},
   "scripts": {

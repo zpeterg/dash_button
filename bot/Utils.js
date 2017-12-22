@@ -7,6 +7,10 @@ var chooseFile = function(which) {
   return (which === 'state') ? '/home/pi/gapp_state.json' : '/home/pi/gapp_commands.json';
 };
 
+var convertCelsius = function(celsius) {
+  return 1.8 * celsius + 32;
+};
+
 var getTimeStamp = function() {
   return Moment().format(Settings.timeFormat);
 };

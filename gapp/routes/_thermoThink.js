@@ -1,9 +1,9 @@
 var Gpio = require('onoff').Gpio;
 var Settings = require('./Settings.js');
 var relayUp = new Gpio(4, 'out');
-relayUp.writeSync(1);                                                 // Turn-off by default
+relayUp.writeSync(Settings.gpioOff);                                                 // Turn-off by default
 var relayDown = new Gpio(17, 'out');
-relayDown.writeSync(1);                                               // Turn-off by default
+relayDown.writeSync(Settings.gpioOff);                                               // Turn-off by default
 var Promise = require("bluebird");
 var prePush = true;                                                    // If true, push once before
                                                                         // To switch display on thermostat
@@ -22,9 +22,9 @@ var thinkLoop = function(thisRelay, degreesLeft, callback) {
     if (degreesLeft > 0) {
       setTimeout(function() {                                           // pad
         prePush = false;
-        thisRelay.writeSync(0);                                         // start press
+        thisRelay.writeSync(Settings.gpioOn);                                         // start press
         setTimeout(function() {
-          thisRelay.writeSync(1);                                       // stop press
+          thisRelay.writeSync(Settings.gpioOff);                                       // stop press
           setTimeout(function() {                                       // pad
             thinkLoop(thisRelay, degreesLeft -= 1, callback);           // loop for next
           }, Settings.timePressPadding);

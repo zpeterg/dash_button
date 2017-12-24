@@ -24,6 +24,13 @@ var constThermoAdjust = {
 var si7021 = new Si7021({ i2cBusNo: 1 });
 
 ///// Thermo adjust temp
+var removeAHistoryTimer = function() {
+  setTimeout(function(){
+    if (Settings.debug || Settings.debugAdjust) console.log('** Timer is removing a history **');
+    constThermoAdjust.adjustHistory.shift();
+    removeAHistoryTimer();
+  }, Settings.adjustHistoryTimer);
+};
 var wipeTimeout = function() {
   clearTimeout(constThermoAdjust.timeoutAdjust);
   constThermoAdjust.timeoutAdjust = null;
@@ -32,18 +39,17 @@ var thermoIsExcursion = function(adjust) {
   var total = 0;
   constThermoAdjust.adjustHistory.map(function(o) { total += +o });
   total += +adjust;                                                              // get the total, including the new adjustment (so that corrections back down are allowed)
-  var rtn = total > Settings.adjustHistoryDownLimit & total < Settings.adjustHistoryUpLimit;       // the temp hasn't been adjusted outside the excursion limits
-  if (Settings.debug) {
-    console.log('The total for the adjustHistory ' + JSON.stringify(constThermoAdjust.adjustHistory) + ' is ' + total + ' resulting in answer ' + rtn);
+  var rtn = (total > Settings.adjustHistoryUpLimit || total > Settings.adjustHistoryUpLimit);       // the temp hasn't been adjusted outside the excursion limits
+  if (Settings.debug || Settings.debugAdjust) {
+    console.log('The total for the adjustHistory ' + JSON.stringify(constThermoAdjust.adjustHistory) + ' is ' + total + ' resulting in answer ' + (rtn ? 'true' : 'false'));
   }
   return rtn; 
 };
 var thermoAdjustLimit = function(adjust) {
   var rtn = 0;
-  if (adjust > 0.9) return 1;
-  else if (adjust < -0.9) return -1;
-  var isExcursion = thermoIsExcursion(rtn);
-  return isExcursion ? 0 : rtn;                   // Don't adjust if there's been an excursion
+  if (adjust > 0.9) rtn = 1;
+  else if (adjust < -0.9) rtn = -1;
+  return thermoIsExcursion(rtn) ? 0 : rtn;                   // Don't adjust if there's been an excursion
 };
 var thermoAdjustTemp = function(currTemp) {
   if (constThermoAdjust.blockAdjust) return 0;
@@ -51,9 +57,11 @@ var thermoAdjustTemp = function(currTemp) {
   wipeTimeout();
   var rtn = thermoAdjustLimit(constThermoAdjust.adjustToTemp - currTemp);
   constThermoAdjust.adjustToTemp = 0;
-  constThermoAdjust.adjustHistory.push(rtn);                // Add to history
+  if (Settings.debug || Settings.debugAdjust) console.log('@@ Adding a history ' + rtn + ' @@');
+  if (rtn !== 0) constThermoAdjust.adjustHistory.push(rtn);                // Add to history, if acted-upon
   if (constThermoAdjust.adjustHistory.length > Settings.adjustTempHistoryLimit) {
-    constThermoAdjust.adjustHistory = constThermoAdjust.adjustHistory.shift();              // remove earliest from history
+    if (Settings.debug || Settings.debugAdjust) console.log('$$ Removing a history $$');
+    constThermoAdjust.adjustHistory.shift();              // remove earliest from history
   }
   return rtn;
 };
@@ -202,9 +210,9 @@ var thinkProcess = function(state, commands) {
 
   ///// Thermo adjust temp
   var adjustDiffTemp = thermoAdjustTemp(state.thermoTemp);
-  if (Settings.debug) console.log('temp to adjust to ' + adjustDiffTemp + ' and current is ' + state.thermoTemp + '.');
+  if (Settings.debug || Settings.debugAdjust) console.log('-- temp to adjust by is ' + adjustDiffTemp + ' and current is ' + state.thermoTemp + '.--');
   var adjustTemp = +state.thermoTemp + thermoAdjustLimit(adjustDiffTemp);
-  if (Settings.debug) console.log('temp after adjust limit is ' + adjustTemp);
+  if (Settings.debug || Settings.debugAdjust) console.log('temp after adjust limit is ' + adjustTemp);
   state.thermoTemp = adjustTemp;          // check for updates
   thermoAdjustTempSet(Settings.adjustTempDelayNormal);            // 
   
@@ -361,6 +369,7 @@ var think = function() {
   });
 };
 DashListen();                 // start listeners
+removeAHistoryTimer();
 think()
   .catch(function(err) {
     console.log('Error at top:', err);

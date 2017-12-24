@@ -29,7 +29,7 @@ var thinkLoop = function(thisRelay, degreesLeft, callback) {
             thinkLoop(thisRelay, degreesLeft -= 1, callback);           // loop for next
           }, Settings.timePressPadding);
         }, Settings.timePress);
-      }, Settings.timePressPadding) 
+      }, Settings.timePressPadding); 
     }
     else {                                                              // Reached goal
       callback();

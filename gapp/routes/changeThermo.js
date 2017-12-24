@@ -22,13 +22,18 @@ router.get('/which/:which/degrees/:degrees', function (req, res) {
     return true;
   }
   degrees = Math.round(degrees);
-  thermoThink(which, degrees) 
-    .then(function() {
-      res.send('success');
-    })
-    .catch(function(err) {
-      res.send('error:' + err);
-    });
+  if (degrees > 0) {
+    thermoThink(which, degrees) 
+      .then(function() {
+        res.send('success');
+      })
+      .catch(function(err) {
+        res.send('error:' + err);
+      });  
+  }
+  else {
+    res.send('success');
+  }
 });
 
 module.exports = router;

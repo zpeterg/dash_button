@@ -1,6 +1,9 @@
 module.exports = {
-  adjustTempDelay: 10,                      // Minutes
-  adjustTempDelayNormal: 5,                      // Minutes
+  adjustHistoryUpLimit: 2,                // Limit of auto-adjust up (within hour)
+  adjustHistoryDownLimit: 2,                // Limit of auto-adjusting down (within hour)
+  adjustTempDelay: 15,                      // Minutes
+  adjustTempDelayNormal: 6,                      // Minutes
+  adjustTempHistoryLimit: 10,                // cycles to watch for exursions-ver (about every hour)
   debug: true,
   defaultStartTime: '0:00',
   defaultDuration: 0,

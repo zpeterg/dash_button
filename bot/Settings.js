@@ -6,7 +6,7 @@ module.exports = {
   adjustTempHistoryLimit: 10,                // cycles to watch for exursions-ver (about every hour)
   adjustHistoryTimer: 1 * 60 * 60 * 1000,     // remove an adjustment history every hour
   debug: false,
-  debugAdjust: true,
+  debugAdjust: false,
   defaultStartTime: '0:00',
   defaultDuration: 0,
   defaultTemp: 66,

@@ -253,7 +253,7 @@ var thinkProcess = function(state, commands) {
         .then(function() {
           state.thermoTemp = state.thermo0Temp;
           thermoAdjustTempSet(Settings.adjustTempDelay, true);                          // set timeout to adjust temp later
-          console.log('Set baseline temp as ' + state.thermo0Temp + '.');
+          if (Settings.debug || Settings.debugAdjust) console.log('Set baseline temp as ' + state.thermo0Temp + '.');
         })
     );
   }

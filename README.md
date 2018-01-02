@@ -3,8 +3,12 @@ A quick-setup set of actions triggered by a dash button
 
 #Installation
 ##Install required programs:
-```sudo apt-get install alsa-base alsa-utils```
-```sudo apt-get install libpcap-dev```
+```sudo apt-get install git -y```
+```sudo apt-get install alsa-base alsa-utils -y```
+```sudo apt-get install libpcap-dev -y```
+And node:
+```curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+sudo apt-get install -y nodejs```
 May need to set headphone output on Raspberry Pi:
 ```amixer cset numid=3 1```
 And adjust volume:
@@ -35,10 +39,11 @@ There are three different main sections:
 ## Flushing logs
 ```sudo pm2 flush```
 ## Setting Static IP in Rasp Pi, from https://askubuntu.com/questions/530522/setting-a-static-ip-on-ubuntu:
+```sudo /etc/network/interfaces
 ```
 auto wlan0
 iface wlan0 inet static
-    address 192.168.1.87
+    address 192.168.1.106
     netmask 255.255.255.0
     network 192.168.1.0
     broadcast 192.168.1.255
@@ -52,3 +57,10 @@ https://github.com/skylarstein/si7021-sensor
 http://console.aws.amazon.com/console/home?region=us-east-1
 http://www.pibits.net/code/raspberry-pi-si7021-sensor-example.php
 And don't forget to turn on the i2c: ```raspi-config```
+## Auto-mount a USB drive (eg., for music)
+Create script under ```/etc/init.d/mystartup.sh``` like this:
+```
+#!/bin/bash
+echo "Setting up USB mount"
+sudo mount /dev/sda1 /media/usb
+```rm 

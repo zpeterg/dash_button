@@ -1,0 +1,15 @@
+module.exports = {
+  playDuration: 20,
+  playStartedTime: '20:25',
+  switch1Duration: 320,
+  switch1StartedTime: '16:45',
+  thermoTemp: 71,
+  thermo0Temp: 71,
+  thermo1Temp: 68,
+  thermo1StartedTime: '23:20',
+  thermo1EndedTime: '6:00',
+  thermoOutingTemp: 66,
+  thermoBoostTemp: 3,
+  thermoBoostStartedTime: '14:00',
+  thermoOutingOn: false,
+};

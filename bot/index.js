@@ -1,5 +1,4 @@
 var curl = require('curlrequest');
-var Sound = require('aplay');
 var Promise = require('bluebird');
 var fs = Promise.promisifyAll(require('fs'));
 var Moment = require('moment');
@@ -8,10 +7,9 @@ var Secrets = require('./secrets.js');
 var Settings = require('./Settings.js');
 var DashListen = require('./DashListen.js');
 var Utils = require('./Utils.js');
+var DefaultState = require('./DefaultState');
+var PlayMusic = require('./PlayMusic.js');
 
-var playing = false;
-var paused = false;
-var music = new Sound();
 var changingThermo = false;
 var constThermoAdjust = {
   adjustHistory: [],
@@ -108,6 +106,7 @@ var nowIsBetweenTimes = function(firstTime, secondTime) {
   }
   if (Settings.debug) console.log('now is checking for between ' + first.format('DD HH:mm') + ' and ' + second.format('DD HH:mm'));
   var rtn = now.isBetween(first, second);
+  if (Settings.debug) console.log('Was ' + (rtn ? 'true - between the times' : 'false - not between the times'));
   return rtn;
 };
 
@@ -157,34 +156,9 @@ var setThermo = function(currTemp, newTemp) {
         resolve();
       }
     );
-  });
+  }); 
 };
 
-var playIt = function() {
-
-  // with ability to pause/resume:
-  music.play('/home/pi/test.wav');
-
-  // you can also listen for various callbacks:
-  if (!playing) {                                // Only set listener the first time
-    music.on('complete', function () {
-      playIt();
-    });
-  }
-  playing = true;
-};
-// Toggle-function that pauses/resumes the music per above
-var pauseIt = function() {
-  music.pause();
-  paused = true;
-  if (Settings.debug) console.log('Paused sound...');
-};
-
-var resumeIt = function() {
-  music.resume();
-  paused = false;
-  if (Settings.debug) console.log('Resuming sound...');
-};
 
 var ifPresentAndDifferent = function(propName, state, commands) {
   if (typeof commands[propName] !== 'undefined' && commands[propName] !== state[propName]){
@@ -206,6 +180,7 @@ var processTime = function(timeName, state, commands) {
 
 // Main think process
 var thinkProcess = function(state, commands) {
+  if (typeof state.thermoTemp === 'undefined') state = DefaultState;        // If missing temp, assume whole object is empty and default it all
   var thinkExecution = [];                    // list of promises to run at the end
 
   ///// Thermo adjust temp
@@ -286,12 +261,12 @@ var thinkProcess = function(state, commands) {
     if (Settings.debug) console.log('state of playing', state.playing);
     if (!state.playing) {
       if (Settings.debug) console.log('Not playing already - play it!');
-      playIt();
+      PlayMusic.play();
       state.playing = true;  
     }    
   } else {                                      // Outside the play-time
     if (Settings.debug) console.log('Outside the time-limit, STOP IT!');
-    pauseIt();
+    PlayMusic.stop();
     state.playing = false;
   } 
   

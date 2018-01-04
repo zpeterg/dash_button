@@ -3,19 +3,29 @@ A quick-setup set of actions triggered by a dash button
 
 #Installation
 ##Install required programs:
-```sudo apt-get install git -y```
-```sudo apt-get install alsa-base alsa-utils -y```
-```sudo apt-get install libpcap-dev -y```
+```
+sudo apt-get install git -y
+sudo apt-get install alsa-base alsa-utils -y
+sudo apt-get install libpcap-dev -y
+```
 And node:
-```curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-sudo apt-get install -y nodejs```
+```
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
 May need to set headphone output on Raspberry Pi:
-```amixer cset numid=3 1```
+```
+amixer cset numid=3 1
+```
 And adjust volume:
-```alsamixer```
+```
+alsamixer
+```
 
 ##Clone repo:
-```git clone https://github.com/zpeterg/dash_button```
+```
+git clone https://github.com/zpeterg/dash_button
+```
 
 ##Create a file called ```secrets.js``` at the root, with contents like:
 ```
@@ -31,15 +41,22 @@ module.exports = {
 # Tips
 ## Outline
 There are three different main sections:
-- ```gapp```: Server (```sudo npm start``` to initiate server),
-- ```bot```: Looping script that contains most of the brains, translating ```commands``` to ```state``` and triggering events as this is done (```npm start``` to run script).
-- ```gapp/gapp_react```: Client-side React app (```npm start``` to run the development server, ```npm run build``` to compile for server to run).
+- gapp: Server (```sudo npm start``` to initiate server),
+- bot: Looping script that contains most of the brains, translating COMMANDS to STATE and triggering events as this is done (npm start to run script).
+- gapp/gapp_react: Client-side React app ("npm start" to run the development server, "npm run build" to compile for server to run).
 ## Updating the key for SSH: 
-```https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/```
+```
+https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
+```
 ## Flushing logs
-```sudo pm2 flush```
+```
+sudo pm2 flush
+```
 ## Setting Static IP in Rasp Pi, from https://askubuntu.com/questions/530522/setting-a-static-ip-on-ubuntu:
-```sudo /etc/network/interfaces
+```
+sudo /etc/network/interfaces
+```
+And add content like this:
 ```
 auto wlan0
 iface wlan0 inet static
@@ -58,9 +75,9 @@ http://console.aws.amazon.com/console/home?region=us-east-1
 http://www.pibits.net/code/raspberry-pi-si7021-sensor-example.php
 And don't forget to turn on the i2c: ```raspi-config```
 ## Auto-mount a USB drive (eg., for music)
-Create script under ```/etc/init.d/mystartup.sh``` like this:
+Create script under "/etc/init.d/mystartup.sh" like this (though not certain that this will run):
 ```
 #!/bin/bash
 echo "Setting up USB mount"
 sudo mount /dev/sda1 /media/usb
-```rm 
+``` 

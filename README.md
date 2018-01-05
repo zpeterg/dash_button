@@ -2,11 +2,25 @@
 A quick-setup set of actions triggered by a dash button
 
 #Installation
+##See under "tips" for setting up fixed-ip and wifi connection
 ##First update system and Raspberry Pi:
 ```
 sudo apt-get update
 sudo apt-get upgrade
 sudo rpi-update
+```
+##Change password if needed, and use Raspi-Config to update timezone, turn on SSH, and turn-on Remote GPIO:
+```
+passwd
+sudo raspi-config
+```
+##Copy in SSH keys if needed, and set privileges:
+```
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/my_key
+eval $(ssh-agent -s)
+ssh-add ~/.ssh/my_key
 ```
 ##Install required programs:
 ```
@@ -33,7 +47,7 @@ alsamixer
 git clone https://github.com/zpeterg/dash_button
 ```
 
-##Create a file called ```secrets.js``` at the root, with contents like:
+##Create a file called ```secrets.js``` at the bot root, with contents like:
 ```
 module.exports = {
     ifttt_key: 'ifttt_key_for_webhook',
@@ -41,8 +55,20 @@ module.exports = {
 };
 
 ```
-
-##Create files named ```gapp_commands.json``` and ```gapp_state.json``` outside of project root.
+##Create files named gapp_commands.json" and "gapp_state.json" outside of project root, both with content:
+```
+{}
+```
+##Run "npm install" in the gapp, gapp/gapp_react and bot directories, then run this in gapp/gapp_react directory:
+```
+npm run build
+```
+##Install and start pm2:
+```
+sudo npm install pm2 -g
+sudo pm2 start ~/dash_button/bot/index.js
+sudo pm2 start ~/dash_button/gapp/bin/www
+```
 
 # Tips
 ## Outline

@@ -68,6 +68,7 @@ npm run build
 sudo npm install pm2 -g
 sudo pm2 start ~/dash_button/bot/index.js
 sudo pm2 start ~/dash_button/gapp/bin/www
+sudo pm2 save
 ```
 
 # Tips
@@ -111,5 +112,6 @@ Create script under "/etc/init.d/mystartup.sh" like this (though not certain tha
 ```
 #!/bin/bash
 echo "Setting up USB mount"
+sleep 5
 sudo mount /dev/sda1 /media/usb
 ``` 

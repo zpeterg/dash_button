@@ -8,7 +8,7 @@ var Settings = require('./Settings.js');
 var DashListen = require('./DashListen.js');
 var Utils = require('./Utils.js');
 var DefaultState = require('./DefaultState');
-var PlayMusic = require('./PlayMusic.js');
+var PlayMusic = require('./aPlayMusic.js');
 
 var changingThermo = false;
 var constThermoAdjust = {

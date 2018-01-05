@@ -2,6 +2,7 @@
 A quick-setup set of actions triggered by a dash button
 
 #Installation
+##See under "tips" for setting up fixed-ip and wifi connection
 ##First update system and Raspberry Pi:
 ```
 sudo apt-get update
@@ -54,8 +55,19 @@ module.exports = {
 };
 
 ```
-
-##Create files named ```gapp_commands.json``` and ```gapp_state.json``` outside of project root.
+##Create files named gapp_commands.json" and "gapp_state.json" outside of project root, both with content:
+```
+{}
+```
+##Run "npm install" in the gapp, gapp/gapp_react and bot directories, then run this in gapp/gapp_react directory:
+```
+npm run build
+```
+##Install and start pm2:
+```
+sudo npm install pm2 -g
+sudo pm2 start ~/dash_button/
+```
 
 # Tips
 ## Outline

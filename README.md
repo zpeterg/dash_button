@@ -2,6 +2,12 @@
 A quick-setup set of actions triggered by a dash button
 
 #Installation
+##First update system and Raspberry Pi:
+```
+sudo apt-get update
+sudo apt-get upgrade
+sudo rpi-update
+```
 ##Install required programs:
 ```
 sudo apt-get install git -y

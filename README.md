@@ -8,6 +8,19 @@ sudo apt-get update
 sudo apt-get upgrade
 sudo rpi-update
 ```
+##Change password if needed, and use Raspi-Config to update timezone, turn on SSH, and turn-on Remote GPIO:
+```
+passwd
+sudo raspi-config
+```
+##Copy in SSH keys if needed, and set privileges:
+```
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/my_key
+eval $(ssh-agent -s)
+ssh-add ~/.ssh/my_key
+```
 ##Install required programs:
 ```
 sudo apt-get install git -y
@@ -33,7 +46,7 @@ alsamixer
 git clone https://github.com/zpeterg/dash_button
 ```
 
-##Create a file called ```secrets.js``` at the root, with contents like:
+##Create a file called ```secrets.js``` at the bot root, with contents like:
 ```
 module.exports = {
     ifttt_key: 'ifttt_key_for_webhook',

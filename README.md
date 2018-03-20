@@ -69,6 +69,7 @@ sudo npm install pm2 -g
 sudo pm2 start ~/dash_button/bot/index.js
 sudo pm2 start ~/dash_button/gapp/bin/www
 sudo pm2 save
+sudo pm2 startup
 ```
 
 # Tips

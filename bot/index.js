@@ -199,6 +199,7 @@ var thinkProcess = function(state, commands) {
   state = processTemp('thermoOutingTemp', state, commands);
   state = processTemp('thermoBoostTemp', state, commands);
   state = processTime('thermoBoostStartedTime', state, commands);
+  ////////////// todo: add another flag to turn-off all thermostat changes
   if (typeof state.thermoOutingOn === 'undefined') state.thermoOutingOn = false;
   if (typeof commands.thermoOutingOn !== 'undefined' && commands.thermoOutingOn !== state.thermoOutingOn) {
     state.thermoOutingOn = commands.thermoOutingOn;
@@ -242,7 +243,7 @@ var thinkProcess = function(state, commands) {
       setThermo(state.thermoTemp, state.thermo1Temp)
         .then(function() {
           state.thermoTemp = state.thermo1Temp;
-          console.log('Set Time Span temp as ' + state.thermo1Temp + '.');
+          if (Settings.debug) console.log('Set Time Span temp as ' + state.thermo1Temp + '.');
         })
     );
   }

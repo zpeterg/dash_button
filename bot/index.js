@@ -114,7 +114,7 @@ var nowIsBetweenTimes = function(firstTime, secondTime) {
 var switch1On = function() {
   return new Promise(function(resolve, reject) {
     curl.request('https://maker.ifttt.com/trigger/switch1On/with/key/' + Secrets.ifttt_key, function(err, data) {
-      if (err) reject('Error with switch1On curl', err);
+      if (err) resolve('Error with switch1On curl', err);
       if (Settings.debug) console.log('data:::', data);
       resolve();
     });
@@ -303,7 +303,8 @@ var thinkProcess = function(state, commands) {
         resolve(state);                     // return the global state after all modifications
       })
       .catch(function(err) {
-        reject('Error in ThinkProcess:', err);
+        console.log('Error in ThinkProcess: ' + err);
+        resolve();
       });
   });
 };

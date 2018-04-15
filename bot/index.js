@@ -140,6 +140,11 @@ var setThermo = function(currTemp, newTemp) {
   if (Settings.debug) console.log('------ About to set thermo -----');
   return new Promise(function(resolve, reject) {
     const callUrl = 'http://localhost/changeThermo/which/' + which + '/degrees/' + degrees + '/';
+    // If no temperature change, stop 
+    if (degrees === 0) {
+      resolve();
+      return;
+    }
     curl.request(
       callUrl, 
       function(err, data) {
@@ -303,6 +308,7 @@ var thinkProcess = function(state, commands) {
         resolve(state);                     // return the global state after all modifications
       })
       .catch(function(err) {
+        // If an error, console-log it but don't stop script
         console.log('Error in ThinkProcess: ' + err);
         resolve();
       });

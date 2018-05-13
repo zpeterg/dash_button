@@ -140,24 +140,20 @@ var setThermo = function(currTemp, newTemp) {
   if (Settings.debug) console.log('------ About to set thermo -----');
   return new Promise(function(resolve, reject) {
     const callUrl = 'http://localhost/changeThermo/which/' + which + '/degrees/' + degrees + '/';
-    // If no temperature change, stop 
-    if (degrees === 0) {
-      resolve();
-      return;
-    }
+    Utils.debugOut('Starting curl for temp change of ' + which + ' by ' + degrees + ' degrees', 'temp');
     curl.request(
       callUrl, 
       function(err, data) {
         changingThermo = false;                   // allow next call
         if (err) {
-          if (Settings.debug) console.log('Error with setThermo curl for ' + callUrl + ':', err);
+          Utils.debugOut('Error with setThermo curl for ' + callUrl + ':' + err, 'temp');
           reject('Error with setThermo curl for ' + callUrl + ':' + err);
         }
         if (data !== 'success') {
-          if (Settings.debug) console.log('setThermo curl failed with response for ' + callUrl + ':', data);
+          Utils.debugOut('setThermo curl failed with response for ' + callUrl + ': ' + data, 'temp');
           reject('setThermo curl failed with response for ' + callUrl + ':' + data);
         }
-        if (Settings.debug) console.log('setThermo result:::', data);
+        Utils.debugOut('setThermo result:' + data, 'temp');
         resolve();
       }
     );

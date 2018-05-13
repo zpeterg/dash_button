@@ -49,6 +49,7 @@ var readFile = function(which) {
 module.exports = {
   chooseFile: chooseFile,
   convertCelsius: convertCelsius,
+  debugOut: debugOut,
   getTimeStamp: getTimeStamp,
   getTimeStampBackUpALittle: getTimeStampBackUpALittle,
   readFile: readFile,

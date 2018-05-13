@@ -11,6 +11,13 @@ var convertCelsius = function(celsius) {
   return 1.8 * celsius + 32;
 };
 
+var debugOut = function(message, which) {
+  // Output if debugging temp and type is temp
+  if (which === 'temp' && Settings.debugTemp) console.log(message);
+  // Otherwise, only output if debugging everything
+  else if (Settings.debug) console.log(message);
+};
+
 var getTimeStamp = function() {
   return Moment().format(Settings.timeFormat);
 };

@@ -140,6 +140,12 @@ var setThermo = function(currTemp, newTemp) {
   if (Settings.debug) console.log('------ About to set thermo -----');
   return new Promise(function(resolve, reject) {
     const callUrl = 'http://localhost/changeThermo/which/' + which + '/degrees/' + degrees + '/';
+    // If not changing by anything, don't make the call (and reset the flag that blocks further calls)
+    if (degrees === 0) {
+      changingThermo = false;
+      resolve();
+      return;
+    }
     Utils.debugOut('Starting curl for temp change of ' + which + ' by ' + degrees + ' degrees', 'temp');
     curl.request(
       callUrl, 
